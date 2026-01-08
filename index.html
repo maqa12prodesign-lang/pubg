@@ -1,0 +1,2839 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Royale 3D | Battle Royale</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: #000; 
+            font-family: 'Arial', sans-serif;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: none;
+        }
+        
+        /* MOBİL UYARI EKRANI */
+        #mobile-orientation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: white;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+        
+        #mobile-orientation img {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            animation: rotate 2s infinite linear;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(90deg); }
+        }
+        
+        /* MOBİL KONTROL DÜĞMELERİ */
+        #mobile-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            pointer-events: none;
+            z-index: 2000;
+            display: none;
+        }
+        
+        .joystick-container {
+            position: absolute;
+            left: 30px;
+            bottom: 30px;
+            width: 150px;
+            height: 150px;
+        }
+        
+        #joystick-base {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 165, 0, 0.5);
+        }
+        
+        #joystick-thumb {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 140, 0, 0.8);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid white;
+        }
+        
+        .action-buttons {
+            position: absolute;
+            right: 30px;
+            bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 150px;
+        }
+        
+        .mobile-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 165, 0, 0.7);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .mobile-btn:active {
+            background: rgba(255, 140, 0, 0.8);
+            transform: scale(0.95);
+        }
+        
+        #fire-btn {
+            background: rgba(255, 0, 0, 0.7);
+            border-color: #ff4444;
+        }
+        
+        #jump-btn {
+            background: rgba(0, 150, 255, 0.7);
+            border-color: #44aaff;
+        }
+        
+        #reload-btn {
+            background: rgba(255, 215, 0, 0.7);
+            border-color: #ffd700;
+        }
+        
+        #camera-btn {
+            background: rgba(100, 100, 255, 0.7);
+            border-color: #6666ff;
+        }
+        
+        #weapon-btn {
+            background: rgba(0, 200, 0, 0.7);
+            border-color: #00cc00;
+        }
+        
+        /* MOBİL ATEŞ ALANI */
+        #fire-area {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            width: 50%;
+            height: 100%;
+            pointer-events: auto;
+            z-index: 1500;
+            display: none;
+        }
+        
+        /* MOBİL HUD */
+        #mobile-hud {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 165, 0, 0.5);
+            color: white;
+            font-size: 12px;
+            z-index: 2000;
+            display: none;
+            min-width: 120px;
+        }
+        
+        .mobile-hud-item {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .mobile-hud-value {
+            color: #ffa500;
+            font-weight: bold;
+        }
+        
+        #ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 10; pointer-events: none; }
+        .panel { 
+            background: rgba(0,0,0,0.7); 
+            padding: 20px; 
+            border-radius: 10px; 
+            border: 2px solid rgba(255, 165, 0, 0.5);
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        #start-btn { 
+            padding: 12px 30px; 
+            background: linear-gradient(45deg, #ff8c00, #ff5e14); 
+            border: none; 
+            color: white; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            pointer-events: auto; 
+            font-weight: bold; 
+            font-size: 18px;
+            border-radius: 5px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        #start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #ff8c00;
+        }
+        #title {
+            font-size: 32px;
+            background: linear-gradient(45deg, #ff8c00, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 140, 0, 0.5);
+        }
+        #game-state {
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        #lobby-info {
+            margin-top: 10px;
+            color: #aaa;
+            font-size: 14px;
+        }
+        #crosshair { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            width: 20px;
+            height: 20px;
+            transform: translate(-50%, -50%);
+            display: none; 
+            pointer-events: none;
+        }
+        #crosshair::before, #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        #crosshair::before {
+            width: 2px;
+            height: 12px;
+            top: 4px;
+            left: 9px;
+        }
+        #crosshair::after {
+            width: 12px;
+            height: 2px;
+            top: 9px;
+            left: 4px;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+        }
+        #lobby-controls {
+            margin-top: 15px;
+            color: #ff8c00;
+            font-size: 12px;
+        }
+        #camera-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 1px solid #ff8c00;
+            cursor: pointer;
+            display: none;
+            z-index: 100;
+        }
+        #weapon-container {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 600px;
+            pointer-events: none;
+            display: none;
+            overflow: hidden;
+        }
+        #weapon-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        #performance-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #00ff00;
+            font-size: 12px;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: none;
+        }
+        
+        /* BATTLE ROYALE UI */
+        #battle-info {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 165, 0, 0.5);
+            display: none;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            text-align: center;
+            min-width: 250px;
+        }
+        
+        #player-count {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff00;
+            margin-bottom: 5px;
+        }
+        
+        #kill-count {
+            font-size: 18px;
+            color: #ffa500;
+        }
+        
+        #circle-info {
+            position: absolute;
+            bottom: 100px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ff0000;
+            display: none;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* PUBG TARZI CAN BARI */
+        #health-container {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 300px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 5px;
+            display: none;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        #health-bar {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff3333);
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            transition: width 0.3s ease;
+        }
+        
+        #health-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.2) 0%, 
+                rgba(255, 255, 255, 0.4) 50%, 
+                rgba(255, 255, 255, 0.2) 100%);
+            border-radius: 5px;
+            animation: healthPulse 2s infinite;
+        }
+        
+        #health-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            text-shadow: 1px 1px 2px black;
+            z-index: 2;
+        }
+        
+        #health-icon {
+            position: absolute;
+            left: -45px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 30px;
+            color: #ff3333;
+            filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.7));
+        }
+        
+        @keyframes healthPulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+            100% { opacity: 0.3; }
+        }
+        
+        /* HASAR ALINCA EKRAN KIRMIZILAŞMA */
+        #damage-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0);
+            pointer-events: none;
+            z-index: 999;
+            transition: background 0.3s;
+            display: none;
+        }
+        
+        /* CAN DÜŞÜKSE UYARI */
+        #low-health-warning {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff0000;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+            display: none;
+            animation: lowHealthPulse 1s infinite;
+            z-index: 1001;
+        }
+        
+        @keyframes lowHealthPulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+        
+        /* BOT İNDİKATÖRÜ */
+        .bot-indicator {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #ff0000;
+            border-radius: 50%;
+            border: 2px solid white;
+            transform: translate(-50%, -50%);
+            z-index: 500;
+            pointer-events: none;
+            box-shadow: 0 0 12px rgba(255, 0, 0, 0.8);
+        }
+        
+        /* BOT CAN BARI */
+        .bot-health-bar {
+            position: absolute;
+            width: 40px;
+            height: 5px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+            transform: translate(-50%, -25px);
+            z-index: 501;
+            pointer-events: none;
+        }
+        
+        .bot-health-fill {
+            width: 100%;
+            height: 100%;
+            background: #00ff00;
+            transition: width 0.3s;
+        }
+        
+        /* ÖLÜM EKRANI */
+        #death-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+        
+        #death-stats {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #ff0000;
+            min-width: 400px;
+        }
+        
+        #death-title {
+            font-size: 48px;
+            color: #ff0000;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+        }
+        
+        .stat-item {
+            font-size: 20px;
+            margin: 10px 0;
+            color: #ccc;
+        }
+        
+        .stat-value {
+            color: #ffa500;
+            font-weight: bold;
+        }
+        
+        #restart-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: linear-gradient(45deg, #ff8c00, #ff5e14);
+            border: none;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        #restart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ff8c00;
+        }
+        
+        /* MOBİL MENÜ */
+        #mobile-menu {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 2000;
+            display: none;
+        }
+        
+        #menu-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 165, 0, 0.7);
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        /* MEDIA QUERIES */
+        @media (max-width: 768px) {
+            #ui {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+            }
+            
+            .panel {
+                padding: 15px;
+            }
+            
+            #title {
+                font-size: 24px;
+            }
+            
+            #game-state {
+                font-size: 16px;
+            }
+            
+            #lobby-controls {
+                font-size: 10px;
+            }
+            
+            #start-btn {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+            
+            #battle-info {
+                top: 10px;
+                padding: 8px 15px;
+                min-width: 200px;
+            }
+            
+            #player-count {
+                font-size: 20px;
+            }
+            
+            #kill-count {
+                font-size: 16px;
+            }
+            
+            #circle-info {
+                bottom: 220px;
+                left: 10px;
+                padding: 10px;
+            }
+            
+            #health-container {
+                bottom: 250px;
+                left: 10px;
+                width: 200px;
+                height: 30px;
+            }
+            
+            #health-text {
+                font-size: 12px;
+            }
+            
+            #health-icon {
+                left: -35px;
+                font-size: 24px;
+            }
+            
+            #weapon-container {
+                width: 400px;
+                height: 300px;
+            }
+            
+            .mobile-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 12px;
+            }
+            
+            .joystick-container {
+                width: 120px;
+                height: 120px;
+            }
+            
+            #joystick-thumb {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .action-buttons {
+                width: 120px;
+            }
+        }
+        
+        @media (orientation: portrait) {
+            #mobile-orientation {
+                display: flex;
+            }
+            
+            #ui, #mobile-controls, #mobile-hud, #mobile-menu {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- MOBİL YATAY UYARI -->
+<div id="mobile-orientation">
+    <div>
+        <div style="font-size: 36px; color: #ff8c00; margin-bottom: 20px;">📱</div>
+        <h2 style="color: #ff8c00;">LÜTFEN CİHAZI YATAY TUTUN</h2>
+        <p>Oyun mobil cihazlarda sadece yatay modda oynanabilir</p>
+        <p style="font-size: 14px; color: #aaa; margin-top: 30px;">Cihazınızı yan çevirip sayfayı yenileyin</p>
+    </div>
+</div>
+
+<!-- MOBİL MENÜ -->
+<div id="mobile-menu">
+    <div id="menu-btn">☰</div>
+</div>
+
+<!-- MOBİL HUD -->
+<div id="mobile-hud">
+    <div class="mobile-hud-item">
+        <span>CAN:</span>
+        <span id="mobile-health" class="mobile-hud-value">100</span>
+    </div>
+    <div class="mobile-hud-item">
+        <span>MÜHİMMAT:</span>
+        <span id="mobile-ammo" class="mobile-hud-value">30/150</span>
+    </div>
+    <div class="mobile-hud-item">
+        <span>SİLAH:</span>
+        <span id="mobile-weapon" class="mobile-hud-value">AK-47</span>
+    </div>
+</div>
+
+<!-- MOBİL KONTROLLER -->
+<div id="mobile-controls">
+    <div class="joystick-container">
+        <div id="joystick-base"></div>
+        <div id="joystick-thumb"></div>
+    </div>
+    
+    <div class="action-buttons">
+        <div class="mobile-btn" id="fire-btn">ATEŞ</div>
+        <div class="mobile-btn" id="jump-btn">ZIPLA</div>
+        <div class="mobile-btn" id="reload-btn">ŞARJÖR</div>
+        <div class="mobile-btn" id="camera-btn">KAMERA</div>
+        <div class="mobile-btn" id="weapon-btn">SİLAH</div>
+    </div>
+</div>
+
+<!-- MOBİL ATEŞ ALANI -->
+<div id="fire-area"></div>
+
+<div id="ui">
+    <div class="panel">
+        <div id="title">WEB ROYALE</div>
+        <p>DURUM: <span id="game-state">YÜKLENİYOR...</span></p>
+        <div id="lobby-info">PLAYERUNKNOWN'S BATTLEGROUNDS</div>
+        <button id="start-btn" style="display:none;">OYUNA BAŞLA</button>
+        <div id="lobby-controls">Lobi'de: Fare ile karakteri döndür • WSAD ile yürü • B: Silah Değiştir • R: Şarjör Değiştir</div>
+    </div>
+</div>
+
+<button id="camera-toggle">Kamera: 3. Şahıs [V]</button>
+<div id="crosshair"></div>
+<div id="loading">Yükleniyor...</div>
+<div id="performance-info">FPS: 60</div>
+
+<!-- BATTLE ROYALE UI -->
+<div id="battle-info">
+    <div id="player-count">25 Oyuncu</div>
+    <div id="kill-count">Öldürme: 0</div>
+</div>
+
+<div id="circle-info">
+    <div>Güvenli Bölge</div>
+    <div id="circle-timer">00:30</div>
+</div>
+
+<!-- CAN SİSTEMİ -->
+<div id="health-container">
+    <div id="health-icon">❤️</div>
+    <div id="health-bar">
+        <div id="health-text">100 HP</div>
+    </div>
+</div>
+
+<div id="damage-overlay"></div>
+<div id="low-health-warning">DÜŞÜK CAN!</div>
+
+<!-- ÖLÜM EKRANI -->
+<div id="death-screen">
+    <div id="death-stats">
+        <div id="death-title">ÖLDÜNÜZ!</div>
+        <div class="stat-item">Sıralama: <span id="death-rank" class="stat-value">#1</span></div>
+        <div class="stat-item">Öldürme: <span id="death-kills" class="stat-value">0</span></div>
+        <div class="stat-item">Hasar: <span id="death-damage" class="stat-value">0</span></div>
+        <div class="stat-item">Hayatta Kalma Süresi: <span id="death-time" class="stat-value">0:00</span></div>
+        <button id="restart-btn">TEKRAR DENE</button>
+    </div>
+</div>
+
+<div id="weapon-container">
+    <canvas id="weapon-canvas"></canvas>
+</div>
+
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+</script>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+    // ==================== MOBİL KONTROL DEĞİŞKENLERİ ====================
+    let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    let joystickActive = false;
+    let joystickX = 0;
+    let joystickY = 0;
+    let joystickCenterX = 0;
+    let joystickCenterY = 0;
+    let touchId = null;
+    let mobileMoveForward = false;
+    let mobileMoveBackward = false;
+    let mobileMoveLeft = false;
+    let mobileMoveRight = false;
+    let mobileLookActive = false;
+    let mobileLookX = 0;
+    let mobileLookY = 0;
+    let lastTouchX = 0;
+    let lastTouchY = 0;
+    
+    // ==================== DEĞİŞKENLER ====================
+    let scene, camera, renderer, clock, loader;
+    let player, map, plane, gun;
+    let cars = [];
+    let currentCar = null;
+    let gameState = "LOBBY";
+    let cameraRotationY = 0;
+    let cameraRotationX = 0;
+    let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+    let isMouseLocked = false;
+    let isMouseDown = false;
+    let mouseX = 0;
+    let mouseY = 0;
+    let cameraMode = "THIRD_PERSON";
+    
+    // BATTLE ROYALE DEĞİŞKENLERİ
+    let totalPlayers = 25;
+    let alivePlayers = 25;
+    let playerKills = 0;
+    let gameStartTime = 0;
+    let safeZoneCenter = new THREE.Vector3(0, 0, 0);
+    let safeZoneRadius = 2000;
+    let circleShrinkTime = 180;
+    let circleTimer = circleShrinkTime;
+    let circleTimerInterval;
+    
+    // Performans izleme
+    let frameCount = 0;
+    let lastTime = performance.now();
+    let fps = 60;
+    
+    // Silah değişkenleri
+    let firstPersonWeapon = null;
+    let firstPersonAK47 = null;
+    let firstPersonPistol = null;
+    let firstPersonKnife = null;
+    let firstPersonSniper = null;
+    let firstPersonMark23 = null;
+    let firstPersonShotgun = null;
+    let currentWeaponType = "AK47";
+    let isKnifeAttacking = false;
+    let knifeAttackTime = 0;
+    
+    // Silah listesi
+    const weaponList = ["AK47", "PISTOL", "KNIFE", "SNIPER", "MARK23", "SHOTGUN"];
+    let weaponIndex = 0;
+    
+    let weaponRenderer, weaponCamera, weaponScene;
+    
+    const raycaster = new THREE.Raycaster();
+    const cameraOffset = new THREE.Vector3(0, 1.6, 0); // FPS kamera yüksekliği
+
+    // ==================== BOT SİSTEMİ ====================
+    class Bot {
+        constructor(id, position) {
+            this.id = id;
+            this.model = null;
+            this.health = 100;
+            this.maxHealth = 100;
+            this.position = position.clone();
+            this.targetPosition = null;
+            this.state = "PATROL";
+            this.weapon = "AK47";
+            this.accuracy = 0.4 + Math.random() * 0.3;
+            this.aggression = 0.7 + Math.random() * 0.3;
+            this.reactionTime = 400 + Math.random() * 600;
+            this.lastShotTime = 0;
+            this.lastDecisionTime = 0;
+            this.targetPlayer = null;
+            this.isInCar = false;
+            this.currentCar = null;
+            this.coverPosition = null;
+            this.lastKnownPlayerPosition = null;
+            this.alertLevel = 0;
+            
+            this.sizeMultiplier = 1.3;
+            
+            this.indicator = document.createElement('div');
+            this.indicator.className = 'bot-indicator';
+            this.indicator.id = `bot-indicator-${id}`;
+            document.body.appendChild(this.indicator);
+            
+            this.healthBar = document.createElement('div');
+            this.healthBar.className = 'bot-health-bar';
+            this.healthBar.id = `bot-health-${id}`;
+            this.healthBar.innerHTML = '<div class="bot-health-fill"></div>';
+            document.body.appendChild(this.healthBar);
+            
+            this.loadModel();
+        }
+        
+        loadModel() {
+            loader.load('./models/karakter.glb', (gltf) => {
+                this.model = gltf.scene;
+                this.model.scale.set(6.5 * this.sizeMultiplier, 7.5 * this.sizeMultiplier, 6.5 * this.sizeMultiplier);
+                this.model.position.copy(this.position);
+                this.model.rotation.y = Math.PI;
+                this.model.name = `bot-${this.id}`;
+                scene.add(this.model);
+                
+                this.model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material.color.setHex(0xFF0000);
+                    }
+                });
+            }, undefined, () => {
+                this.createDefaultModel();
+            });
+        }
+        
+        createDefaultModel() {
+            const bodyGeometry = new THREE.BoxGeometry(1 * this.sizeMultiplier, 2 * this.sizeMultiplier, 0.5 * this.sizeMultiplier);
+            const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0xFF0000 });
+            this.model = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            this.model.position.copy(this.position);
+            this.model.name = `bot-${this.id}`;
+            scene.add(this.model);
+        }
+        
+        update(delta, playerPosition) {
+            if (this.state === "DEAD" || !this.model) return;
+            
+            this.updateIndicator();
+            
+            switch(this.state) {
+                case "PATROL":
+                    this.patrolBehavior(delta, playerPosition);
+                    break;
+                case "COMBAT":
+                    this.combatBehavior(delta, playerPosition);
+                    break;
+                case "FLEE":
+                    this.fleeBehavior(delta, playerPosition);
+                    break;
+            }
+            
+            if (this.isInCar && this.currentCar) {
+                this.driveCar(delta, playerPosition);
+            }
+            
+            this.checkSafeZone();
+            
+            if (Date.now() - this.lastDecisionTime > 1800) {
+                this.makeDecision(playerPosition);
+                this.lastDecisionTime = Date.now();
+            }
+        }
+        
+        patrolBehavior(delta, playerPosition) {
+            if (!this.targetPosition || this.model.position.distanceTo(this.targetPosition) < 4) {
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 40 + Math.random() * 80;
+                this.targetPosition = new THREE.Vector3(
+                    this.model.position.x + Math.cos(angle) * distance,
+                    0,
+                    this.model.position.z + Math.sin(angle) * distance
+                );
+            }
+            
+            const direction = new THREE.Vector3()
+                .subVectors(this.targetPosition, this.model.position)
+                .normalize();
+            
+            this.model.position.add(direction.multiplyScalar(18 * delta));
+            this.model.lookAt(this.targetPosition);
+            
+            const distanceToPlayer = this.model.position.distanceTo(playerPosition);
+            if (distanceToPlayer < 110 && Math.random() < this.aggression) {
+                this.state = "COMBAT";
+                this.targetPlayer = playerPosition;
+                this.lastKnownPlayerPosition = playerPosition.clone();
+                this.alertLevel = 100;
+            }
+        }
+        
+        combatBehavior(delta, playerPosition) {
+            const distanceToPlayer = this.model.position.distanceTo(playerPosition);
+            
+            if (distanceToPlayer < 220) {
+                this.model.lookAt(playerPosition);
+                
+                if (Date.now() - this.lastShotTime > this.reactionTime) {
+                    if (Math.random() < this.accuracy) {
+                        this.shootAtPlayer(playerPosition);
+                    }
+                    this.lastShotTime = Date.now();
+                }
+                
+                if (distanceToPlayer < 28) {
+                    const retreatDir = new THREE.Vector3()
+                        .subVectors(this.model.position, playerPosition)
+                        .normalize();
+                    this.model.position.add(retreatDir.multiplyScalar(26 * delta));
+                } else if (distanceToPlayer > 70) {
+                    const approachDir = new THREE.Vector3()
+                        .subVectors(playerPosition, this.model.position)
+                        .normalize();
+                    this.model.position.add(approachDir.multiplyScalar(16 * delta));
+                }
+                
+                if (this.health < 35 && Math.random() < 0.8) {
+                    this.state = "FLEE";
+                    this.findCover();
+                }
+            } else {
+                this.alertLevel *= 0.92;
+                if (this.alertLevel < 25) {
+                    this.state = "PATROL";
+                }
+            }
+        }
+        
+        fleeBehavior(delta, playerPosition) {
+            if (this.coverPosition) {
+                const direction = new THREE.Vector3()
+                    .subVectors(this.coverPosition, this.model.position)
+                    .normalize();
+                
+                this.model.position.add(direction.multiplyScalar(32 * delta));
+                this.model.lookAt(this.coverPosition);
+                
+                if (this.model.position.distanceTo(this.coverPosition) < 8) {
+                    this.health = Math.min(this.maxHealth, this.health + 12 * delta);
+                    if (this.health > 55) {
+                        this.state = "PATROL";
+                        this.coverPosition = null;
+                    }
+                }
+            } else {
+                this.findCover();
+            }
+        }
+        
+        shootAtPlayer(playerPosition) {
+            const bullet = bulletPool.getBullet();
+            if (!bullet) return;
+            
+            const muzzleOffset = new THREE.Vector3(0, 1.5 * this.sizeMultiplier, -1 * this.sizeMultiplier)
+                .applyEuler(this.model.rotation);
+            bullet.position.copy(this.model.position).add(muzzleOffset);
+            
+            const direction = new THREE.Vector3()
+                .subVectors(playerPosition, bullet.position)
+                .normalize();
+            
+            if (Math.random() > this.accuracy) {
+                direction.x += (Math.random() - 0.5) * 0.1;
+                direction.y += (Math.random() - 0.5) * 0.1;
+                direction.z += (Math.random() - 0.5) * 0.1;
+                direction.normalize();
+            }
+            
+            bullet.userData.velocity = direction.multiplyScalar(290);
+            bullet.userData.lifeTime = 1.8;
+            bullet.userData.damage = 24;
+            bullet.userData.weaponType = this.weapon;
+            bullet.userData.isFromBot = true;
+            bullet.userData.botId = this.id;
+        }
+        
+        findCover() {
+            let bestCover = null;
+            let bestDistance = Infinity;
+            
+            cars.forEach(car => {
+                const distance = this.model.position.distanceTo(car.position);
+                if (distance < 75 && distance < bestDistance) {
+                    bestCover = car.position.clone();
+                    bestDistance = distance;
+                }
+            });
+            
+            scene.traverse(object => {
+                if (object.name === 'crate') {
+                    const distance = this.model.position.distanceTo(object.position);
+                    if (distance < 35 && distance < bestDistance) {
+                        bestCover = object.position.clone();
+                        bestDistance = distance;
+                    }
+                }
+            });
+            
+            this.coverPosition = bestCover;
+        }
+        
+        driveCar(delta, playerPosition) {
+            if (!this.currentCar) return;
+            
+            const target = this.state === "FLEE" ? safeZoneCenter : playerPosition;
+            const direction = new THREE.Vector3()
+                .subVectors(target, this.currentCar.position)
+                .normalize();
+            
+            this.currentCar.position.add(direction.multiplyScalar(75 * delta));
+            this.currentCar.lookAt(target);
+            this.model.position.copy(this.currentCar.position);
+        }
+        
+        makeDecision(playerPosition) {
+            const distanceToPlayer = this.model.position.distanceTo(playerPosition);
+            
+            if (!this.isInCar && cars.length > 0 && Math.random() < 0.12) {
+                cars.forEach(car => {
+                    if (this.model.position.distanceTo(car.position) < 25) {
+                        this.isInCar = true;
+                        this.currentCar = car;
+                    }
+                });
+            }
+            
+            if (this.state === "PATROL") {
+                if (distanceToPlayer < 130 && Math.random() < this.aggression) {
+                    this.state = "COMBAT";
+                    this.targetPlayer = playerPosition;
+                }
+            } else if (this.state === "COMBAT") {
+                if (this.health < 40 && Math.random() < 0.75) {
+                    this.state = "FLEE";
+                    this.findCover();
+                }
+            }
+        }
+        
+        checkSafeZone() {
+            const distanceToCenter = this.model.position.distanceTo(safeZoneCenter);
+            if (distanceToCenter > safeZoneRadius) {
+                const direction = new THREE.Vector3()
+                    .subVectors(safeZoneCenter, this.model.position)
+                    .normalize();
+                this.model.position.add(direction.multiplyScalar(42 * delta));
+            }
+        }
+        
+        updateIndicator() {
+            if (!this.model || !camera) return;
+            
+            const worldPosition = new THREE.Vector3();
+            this.model.getWorldPosition(worldPosition);
+            worldPosition.project(camera);
+            
+            const x = (worldPosition.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-worldPosition.y * 0.5 + 0.5) * window.innerHeight;
+            
+            const isVisible = worldPosition.z < 1 && 
+                             x >= -50 && x <= window.innerWidth + 50 && 
+                             y >= -50 && y <= window.innerHeight + 50;
+            
+            if (!isVisible) {
+                this.indicator.style.display = 'none';
+                this.healthBar.style.display = 'none';
+                return;
+            }
+            
+            this.indicator.style.display = 'block';
+            this.indicator.style.left = `${x}px`;
+            this.indicator.style.top = `${y}px`;
+            
+            this.healthBar.style.display = 'block';
+            this.healthBar.style.left = `${x}px`;
+            this.healthBar.style.top = `${y}px`;
+            
+            const healthFill = this.healthBar.querySelector('.bot-health-fill');
+            const healthPercent = this.health / this.maxHealth;
+            healthFill.style.width = `${healthPercent * 100}%`;
+            
+            if (healthPercent > 0.7) {
+                healthFill.style.background = '#00ff00';
+            } else if (healthPercent > 0.3) {
+                healthFill.style.background = '#ffff00';
+            } else {
+                healthFill.style.background = '#ff0000';
+            }
+            
+            const distance = camera.position.distanceTo(this.model.position);
+            const scale = Math.max(0.6, Math.min(1.4, 600 / distance));
+            this.indicator.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        }
+        
+        takeDamage(amount, source = "player") {
+            this.health -= amount;
+            
+            if (this.health <= 0) {
+                this.die();
+                return true;
+            }
+            return false;
+        }
+        
+        die() {
+            this.state = "DEAD";
+            if (this.model) {
+                scene.remove(this.model);
+            }
+            this.indicator.style.display = 'none';
+            this.healthBar.style.display = 'none';
+            
+            alivePlayers--;
+            updatePlayerCount();
+        }
+    }
+
+    let bots = [];
+    const totalBots = 14;
+
+    // ==================== CAN SİSTEMİ DEĞİŞKENLERİ ====================
+    let playerHealth = 100;
+    let maxHealth = 100;
+    let isTakingDamage = false;
+    let damageTimeout = null;
+    let lastHealthUpdate = 0;
+    
+    // ==================== SİLAH SİSTEMİ ====================
+    class Weapon {
+        constructor(name, settings) {
+            this.name = name;
+            this.type = settings.type;
+            this.damage = settings.damage;
+            this.fireRate = settings.fireRate;
+            this.range = settings.range;
+            this.magSize = settings.magSize;
+            this.bulletsInMag = this.magSize;
+            this.totalBullets = settings.totalBullets || this.magSize * 5;
+            this.reloadTime = settings.reloadTime;
+            this.isReloading = false;
+            this.lastShotTime = 0;
+            
+            this.spread = settings.spread || 0.01;
+            this.isAutomatic = settings.isAutomatic || false;
+            this.pelletCount = settings.pelletCount || 1;
+            this.canZoom = settings.canZoom || false;
+            this.zoomFOV = settings.zoomFOV || 30;
+            
+            this.hudIcon = settings.hudIcon || '🔫';
+        }
+        
+        canShoot() {
+            const now = Date.now();
+            const timeBetweenShots = 1000 / this.fireRate;
+            return !this.isReloading && 
+                   this.bulletsInMag > 0 && 
+                   (now - this.lastShotTime) > timeBetweenShots;
+        }
+        
+        shoot() {
+            if (!this.canShoot()) return false;
+            
+            this.bulletsInMag--;
+            this.lastShotTime = Date.now();
+            
+            updateHUD();
+            updateMobileHUD();
+            
+            if (this.bulletsInMag <= 0 && this.totalBullets > 0) {
+                this.startReload();
+            }
+            
+            return true;
+        }
+        
+        startReload() {
+            if (this.isReloading || this.bulletsInMag === this.magSize || this.totalBullets <= 0) return;
+            
+            this.isReloading = true;
+            
+            setTimeout(() => {
+                const bulletsNeeded = this.magSize - this.bulletsInMag;
+                const bulletsToLoad = Math.min(bulletsNeeded, this.totalBullets);
+                
+                this.totalBullets -= bulletsToLoad;
+                this.bulletsInMag += bulletsToLoad;
+                this.isReloading = false;
+                updateHUD();
+                updateMobileHUD();
+            }, this.reloadTime * 1000);
+        }
+    }
+
+    const weaponDefinitions = {
+        "AK47": new Weapon("AK-47", {
+            type: 'auto',
+            damage: 41,
+            fireRate: 8,
+            range: 400,
+            magSize: 30,
+            reloadTime: 2.5,
+            spread: 0.03,
+            isAutomatic: true,
+            hudIcon: '🔫'
+        }),
+        "PISTOL": new Weapon("Pistol", {
+            type: 'semi',
+            damage: 35,
+            fireRate: 3,
+            range: 200,
+            magSize: 15,
+            reloadTime: 1.8,
+            spread: 0.02,
+            hudIcon: '🔫'
+        }),
+        "SHOTGUN": new Weapon("Pompalı", {
+            type: 'shotgun',
+            damage: 25,
+            fireRate: 0.8,
+            range: 50,
+            magSize: 5,
+            reloadTime: 4.0,
+            spread: 0.08,
+            pelletCount: 6,
+            hudIcon: '🔫'
+        }),
+        "SNIPER": new Weapon("Keskin Nişancı", {
+            type: 'sniper',
+            damage: 88,
+            fireRate: 0.7,
+            range: 1000,
+            magSize: 5,
+            reloadTime: 3.5,
+            spread: 0.001,
+            canZoom: true,
+            zoomFOV: 20,
+            hudIcon: '🎯'
+        }),
+        "MARK23": new Weapon("Mark 23", {
+            type: 'semi',
+            damage: 48,
+            fireRate: 4,
+            range: 250,
+            magSize: 10,
+            reloadTime: 2.0,
+            spread: 0.015,
+            hudIcon: '🔫'
+        }),
+        "KNIFE": new Weapon("Bıçak", {
+            type: 'melee',
+            damage: 60,
+            fireRate: 1.5,
+            range: 2,
+            magSize: Infinity,
+            reloadTime: 0,
+            hudIcon: '🔪'
+        })
+    };
+
+    let currentWeapon = weaponDefinitions[currentWeaponType];
+
+    // ==================== MERMİ HAVUZU ====================
+    class OptimizedBulletPool {
+        constructor(size = 100) {
+            this.pool = [];
+            this.activeBullets = [];
+            
+            const bulletGeometry = new THREE.SphereGeometry(0.05, 4, 4);
+            const bulletMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xFFFF00,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            for (let i = 0; i < size; i++) {
+                const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
+                bullet.visible = false;
+                bullet.userData = {
+                    active: false,
+                    velocity: new THREE.Vector3(),
+                    lifeTime: 0,
+                    damage: 0,
+                    lastCollisionCheck: 0,
+                    weaponType: "",
+                    isFromBot: false,
+                    botId: null
+                };
+                scene.add(bullet);
+                this.pool.push(bullet);
+            }
+            
+            this.collidableObjects = [];
+            this.lastCollisionUpdate = 0;
+        }
+        
+        updateCollidableObjects() {
+            const now = Date.now();
+            if (now - this.lastCollisionUpdate < 1000) return;
+            
+            this.collidableObjects = [];
+            scene.traverse((object) => {
+                if (object.isMesh && object !== player && !object.isLight) {
+                    if (object.name.includes('car') || object.name.includes('crate') || 
+                        object === map || object.name.includes('bot-')) {
+                        this.collidableObjects.push(object);
+                    }
+                }
+            });
+            
+            this.lastCollisionUpdate = now;
+        }
+        
+        getBullet() {
+            for (let i = 0; i < this.pool.length; i++) {
+                const bullet = this.pool[i];
+                if (!bullet.userData.active) {
+                    bullet.userData.active = true;
+                    bullet.visible = true;
+                    this.activeBullets.push(bullet);
+                    return bullet;
+                }
+            }
+            
+            if (this.activeBullets.length > 0) {
+                const oldestBullet = this.activeBullets[0];
+                this.deactivateBullet(oldestBullet, 0);
+                oldestBullet.userData.active = true;
+                oldestBullet.visible = true;
+                this.activeBullets.push(oldestBullet);
+                return oldestBullet;
+            }
+            
+            return null;
+        }
+        
+        update(delta) {
+            this.updateCollidableObjects();
+            
+            for (let i = this.activeBullets.length - 1; i >= 0; i--) {
+                const bullet = this.activeBullets[i];
+                const bulletData = bullet.userData;
+                
+                bullet.position.x += bulletData.velocity.x * delta;
+                bullet.position.y += bulletData.velocity.y * delta;
+                bullet.position.z += bulletData.velocity.z * delta;
+                
+                bulletData.velocity.y -= 15 * delta;
+                
+                bulletData.lifeTime -= delta;
+                if (bulletData.lifeTime <= 0 || bullet.position.y < 0) {
+                    this.deactivateBullet(bullet, i);
+                    continue;
+                }
+                
+                const playerDistance = bullet.position.distanceTo(camera.position);
+                if (playerDistance < 2 && bulletData.isFromBot) {
+                    const damageAmount = bulletData.damage;
+                    takeDamage(damageAmount, `Bot ${bulletData.botId}`);
+                    this.deactivateBullet(bullet, i);
+                    continue;
+                }
+                
+                if (!bulletData.isFromBot) {
+                    for (const bot of bots) {
+                        if (bot.model && bot.state !== "DEAD") {
+                            const botDistance = bullet.position.distanceTo(bot.model.position);
+                            if (botDistance < 2.5) {
+                                const killed = bot.takeDamage(bulletData.damage);
+                                if (killed) {
+                                    playerKills++;
+                                    updateKillCount();
+                                    updateMobileHUD();
+                                }
+                                this.deactivateBullet(bullet, i);
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                const now = Date.now();
+                if (now - bulletData.lastCollisionCheck > 50) {
+                    bulletData.lastCollisionCheck = now;
+                    
+                    if (this.collidableObjects.length > 0) {
+                        for (let j = 0; j < this.collidableObjects.length; j++) {
+                            const obj = this.collidableObjects[j];
+                            const distance = bullet.position.distanceTo(obj.position);
+                            
+                            if (distance < 5) {
+                                raycaster.set(bullet.position, bulletData.velocity.clone().normalize());
+                                const intersects = raycaster.intersectObject(obj, true);
+                                
+                                if (intersects.length > 0 && intersects[0].distance < 2.0) {
+                                    this.deactivateBullet(bullet, i);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        deactivateBullet(bullet, index) {
+            bullet.visible = false;
+            bullet.userData.active = false;
+            this.activeBullets.splice(index, 1);
+        }
+        
+        clearAll() {
+            for (let bullet of this.activeBullets) {
+                bullet.visible = false;
+                bullet.userData.active = false;
+            }
+            this.activeBullets = [];
+        }
+    }
+
+    let bulletPool;
+
+    // ==================== CAN SİSTEMİ FONKSİYONLARI ====================
+    function initHealthSystem() {
+        document.getElementById('health-container').style.display = 'block';
+        updateHealthDisplay();
+    }
+    
+    function takeDamage(amount, source = "unknown") {
+        if (gameState !== "PLAYING" || playerHealth <= 0) return;
+        
+        playerHealth = Math.max(0, playerHealth - amount);
+        
+        showDamageEffect(amount);
+        
+        const damageOverlay = document.getElementById('damage-overlay');
+        damageOverlay.style.display = 'block';
+        damageOverlay.style.background = `rgba(255, 0, 0, ${amount / 100})`;
+        
+        if (damageTimeout) clearTimeout(damageTimeout);
+        damageTimeout = setTimeout(() => {
+            damageOverlay.style.background = 'rgba(255, 0, 0, 0)';
+            setTimeout(() => {
+                damageOverlay.style.display = 'none';
+            }, 300);
+        }, 300);
+        
+        updateLowHealthWarning();
+        updateHealthDisplay();
+        updateMobileHUD();
+        
+        if (playerHealth <= 0) {
+            playerDeath();
+        }
+    }
+    
+    function heal(amount) {
+        if (playerHealth <= 0 || playerHealth >= maxHealth) return;
+        
+        playerHealth = Math.min(maxHealth, playerHealth + amount);
+        updateHealthDisplay();
+        updateMobileHUD();
+    }
+    
+    function updateHealthDisplay() {
+        const healthBar = document.getElementById('health-bar');
+        const healthText = document.getElementById('health-text');
+        const healthIcon = document.getElementById('health-icon');
+        
+        const healthPercentage = (playerHealth / maxHealth) * 100;
+        
+        healthBar.style.width = `${healthPercentage}%`;
+        
+        if (healthPercentage > 70) {
+            healthBar.style.background = 'linear-gradient(90deg, #00ff00, #33ff33)';
+            healthIcon.style.color = '#00ff00';
+        } else if (healthPercentage > 30) {
+            healthBar.style.background = 'linear-gradient(90deg, #ffff00, #ffff33)';
+            healthIcon.style.color = '#ffff00';
+        } else {
+            healthBar.style.background = 'linear-gradient(90deg, #ff0000, #ff3333)';
+            healthIcon.style.color = '#ff0000';
+        }
+        
+        healthText.textContent = `${Math.round(playerHealth)} HP`;
+        
+        healthIcon.style.animation = 'none';
+        setTimeout(() => {
+            healthIcon.style.animation = 'healthPulse 2s infinite';
+        }, 10);
+    }
+    
+    function updateLowHealthWarning() {
+        const lowHealthWarning = document.getElementById('low-health-warning');
+        
+        if (playerHealth <= 30 && playerHealth > 0) {
+            lowHealthWarning.style.display = 'block';
+            lowHealthWarning.textContent = playerHealth <= 10 ? 'KRİTİK CAN!' : 'DÜŞÜK CAN!';
+        } else {
+            lowHealthWarning.style.display = 'none';
+        }
+    }
+    
+    function showDamageEffect(amount) {
+        if (cameraMode === "FIRST_PERSON") {
+            const intensity = Math.min(amount / 50, 0.25);
+            
+            if (firstPersonWeapon) {
+                firstPersonWeapon.rotation.x += intensity * 0.5;
+                firstPersonWeapon.position.z -= intensity * 0.3;
+                
+                setTimeout(() => {
+                    if (firstPersonWeapon) {
+                        firstPersonWeapon.rotation.x -= intensity * 0.5;
+                        firstPersonWeapon.position.z += intensity * 0.3;
+                    }
+                }, 100);
+            }
+        }
+    }
+    
+    function playerDeath() {
+        gameState = "DEAD";
+        
+        const deathScreen = document.getElementById('death-screen');
+        const deathRank = document.getElementById('death-rank');
+        const deathKills = document.getElementById('death-kills');
+        const deathTime = document.getElementById('death-time');
+        
+        const rank = totalPlayers - alivePlayers + 1;
+        deathRank.textContent = `#${rank}`;
+        deathKills.textContent = playerKills.toString();
+        
+        const survivalTime = Math.floor((Date.now() - gameStartTime) / 1000);
+        const minutes = Math.floor(survivalTime / 60);
+        const seconds = survivalTime % 60;
+        deathTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        deathScreen.style.display = 'flex';
+        
+        isMouseLocked = false;
+        document.exitPointerLock();
+        
+        if (isMobile) {
+            document.getElementById('mobile-controls').style.display = 'none';
+            document.getElementById('mobile-hud').style.display = 'none';
+            document.getElementById('fire-area').style.display = 'none';
+        }
+    }
+    
+    function autoHealOverTime() {
+        const now = Date.now();
+        if (now - lastHealthUpdate < 3000) return;
+        
+        if (gameState === "PLAYING" && playerHealth > 0 && playerHealth < maxHealth && !isTakingDamage) {
+            if (playerHealth >= 30) {
+                heal(5);
+            }
+        }
+        
+        lastHealthUpdate = now;
+    }
+
+    // ==================== BATTLE ROYALE FONKSİYONLARI ====================
+    function initBattleRoyale() {
+        for (let i = 0; i < totalBots; i++) {
+            const angle = (i / totalBots) * Math.PI * 2;
+            const distance = 500 + Math.random() * 1000;
+            const position = new THREE.Vector3(
+                Math.cos(angle) * distance,
+                0,
+                Math.sin(angle) * distance
+            );
+            
+            bots.push(new Bot(i + 1, position));
+        }
+        
+        document.getElementById('battle-info').style.display = 'block';
+        document.getElementById('circle-info').style.display = 'block';
+        
+        gameStartTime = Date.now();
+        
+        circleTimerInterval = setInterval(updateCircleTimer, 1000);
+    }
+    
+    function updatePlayerCount() {
+        const playerCount = document.getElementById('player-count');
+        playerCount.textContent = `${alivePlayers} Oyuncu`;
+        
+        if (alivePlayers <= 1 && playerHealth > 0) {
+            victory();
+        }
+    }
+    
+    function updateKillCount() {
+        const killCount = document.getElementById('kill-count');
+        killCount.textContent = `Öldürme: ${playerKills}`;
+    }
+    
+    function updateCircleTimer() {
+        if (gameState !== "PLAYING") return;
+        
+        circleTimer--;
+        const circleTimerElement = document.getElementById('circle-timer');
+        
+        const minutes = Math.floor(circleTimer / 60);
+        const seconds = circleTimer % 60;
+        circleTimerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (circleTimer <= 0) {
+            safeZoneRadius = Math.max(100, safeZoneRadius * 0.7);
+            circleTimer = circleShrinkTime;
+        }
+        
+        const distanceToCenter = camera.position.distanceTo(safeZoneCenter);
+        if (distanceToCenter > safeZoneRadius) {
+            takeDamage(2, "güvenli bölge dışı");
+        }
+    }
+    
+    function victory() {
+        gameState = "VICTORY";
+        
+        const victoryScreen = document.createElement('div');
+        victoryScreen.id = 'victory-screen';
+        victoryScreen.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: gold;
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+        `;
+        victoryScreen.innerHTML = `
+            <div>
+                <div style="font-size: 72px; margin-bottom: 20px;">🎮 ROYALE! 🎮</div>
+                <div style="font-size: 36px; margin-bottom: 10px;">KAZANDINIZ!</div>
+                <div style="font-size: 24px; margin-bottom: 20px;">Öldürme: ${playerKills}</div>
+                <div style="font-size: 18px; color: #ccc;">Sayfayı yenileyerek tekrar oynayabilirsiniz</div>
+            </div>
+        `;
+        document.body.appendChild(victoryScreen);
+        
+        clearInterval(circleTimerInterval);
+        
+        if (isMobile) {
+            document.getElementById('mobile-controls').style.display = 'none';
+            document.getElementById('mobile-hud').style.display = 'none';
+            document.getElementById('fire-area').style.display = 'none';
+        }
+    }
+    
+    function restartGame() {
+        location.reload();
+    }
+
+    // ==================== ATEŞ ETME ====================
+    function optimizedShoot() {
+        if (!currentWeapon.canShoot()) return;
+        
+        if (!currentWeapon.shoot()) return;
+        
+        if (cameraMode === "FIRST_PERSON" && firstPersonWeapon) {
+            const muzzleFlash = new THREE.PointLight(0xffaa00, 5, 1);
+            
+            if (currentWeaponType === "AK47" || currentWeaponType === "SNIPER") {
+                muzzleFlash.position.set(2.0, 0, 0);
+            } else if (currentWeaponType === "PISTOL" || currentWeaponType === "MARK23") {
+                muzzleFlash.position.set(1.5, 0, 0);
+            } else if (currentWeaponType === "SHOTGUN") {
+                muzzleFlash.position.set(3.0, 0, 0);
+            } else {
+                muzzleFlash.position.set(2.0, 0, 0);
+            }
+            
+            firstPersonWeapon.add(muzzleFlash);
+            
+            const originalRotX = firstPersonWeapon.rotation.x;
+            const originalPosZ = firstPersonWeapon.position.z;
+            
+            firstPersonWeapon.rotation.x += 0.15;
+            firstPersonWeapon.position.z -= 0.15;
+            
+            setTimeout(() => {
+                firstPersonWeapon.rotation.x = originalRotX;
+                firstPersonWeapon.position.z = originalPosZ;
+                firstPersonWeapon.remove(muzzleFlash);
+            }, 100);
+        }
+        
+        for (let i = 0; i < (currentWeapon.type === 'shotgun' ? currentWeapon.pelletCount : 1); i++) {
+            const bullet = bulletPool.getBullet();
+            if (!bullet) continue;
+            
+            bullet.position.copy(camera.position);
+            
+            const direction = new THREE.Vector3(0, 0, -1);
+            const cameraQuaternion = new THREE.Quaternion();
+            camera.getWorldQuaternion(cameraQuaternion);
+            direction.applyQuaternion(cameraQuaternion);
+            
+            if (currentWeapon.spread > 0) {
+                const spread = currentWeapon.spread * (currentWeapon.type === 'shotgun' ? 2 : 1);
+                direction.x += (Math.random() - 0.5) * spread;
+                direction.y += (Math.random() - 0.5) * spread;
+                direction.normalize();
+            }
+            
+            const speed = currentWeapon.type === 'sniper' ? 400 : 250;
+            bullet.userData.velocity.copy(direction).multiplyScalar(speed);
+            bullet.userData.lifeTime = currentWeapon.range / speed;
+            bullet.userData.damage = currentWeapon.damage;
+            bullet.userData.weaponType = currentWeaponType;
+            bullet.userData.isFromBot = false;
+        }
+    }
+
+    // ==================== HUD SİSTEMİ ====================
+    function createHUD() {
+        if (!isMobile) {
+            const hudContainer = document.createElement('div');
+            hudContainer.id = 'weapon-hud';
+            hudContainer.style.cssText = `
+                position: absolute;
+                bottom: 30px;
+                right: 30px;
+                color: white;
+                font-family: 'Arial', sans-serif;
+                text-align: right;
+                z-index: 1000;
+                background: rgba(0, 0, 0, 0.65);
+                padding: 20px;
+                border-radius: 15px;
+                border: 2px solid rgba(255, 165, 0, 0.5);
+                min-width: 220px;
+                backdrop-filter: blur(5px);
+                box-shadow: 0 0 15px rgba(255, 140, 0, 0.25);
+            `;
+            
+            hudContainer.innerHTML = `
+                <div style="font-size: 28px; margin-bottom: 5px;">${currentWeapon.hudIcon}</div>
+                <div style="font-size: 34px; font-weight: bold; letter-spacing: 1px;">
+                    <span id="hud-ammo">${currentWeapon.bulletsInMag}</span>/<span id="hud-total">${currentWeapon.totalBullets}</span>
+                </div>
+                <div style="font-size: 18px; opacity: 0.9; margin-top: 5px;">${currentWeapon.name}</div>
+                <div id="hud-reload" style="font-size: 14px; color: #FFA500; margin-top: 8px; display: none;">
+                    🔄 Şarjör Değiştiriliyor...
+                </div>
+                <div id="hud-mode" style="font-size: 12px; opacity: 0.7; margin-top: 15px;">
+                    Mod: <span id="hud-fire-mode">${currentWeapon.isAutomatic ? 'OTOMATİK' : 'TEK'}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(hudContainer);
+        }
+        
+        document.getElementById('performance-info').style.display = 'block';
+    }
+
+    function updateHUD() {
+        if (!isMobile) {
+            const hudAmmo = document.getElementById('hud-ammo');
+            const hudTotal = document.getElementById('hud-total');
+            const hudReload = document.getElementById('hud-reload');
+            const hudFireMode = document.getElementById('hud-fire-mode');
+            
+            if (hudAmmo) hudAmmo.textContent = currentWeapon.bulletsInMag;
+            if (hudTotal) hudTotal.textContent = currentWeapon.totalBullets;
+            if (hudReload) hudReload.style.display = currentWeapon.isReloading ? 'block' : 'none';
+            if (hudFireMode) hudFireMode.textContent = currentWeapon.isAutomatic ? 'OTOMATİK' : 'TEK';
+        }
+    }
+
+    function updateMobileHUD() {
+        if (isMobile) {
+            const mobileHealth = document.getElementById('mobile-health');
+            const mobileAmmo = document.getElementById('mobile-ammo');
+            const mobileWeapon = document.getElementById('mobile-weapon');
+            
+            if (mobileHealth) mobileHealth.textContent = Math.round(playerHealth);
+            if (mobileAmmo) mobileAmmo.textContent = `${currentWeapon.bulletsInMag}/${currentWeapon.totalBullets}`;
+            if (mobileWeapon) mobileWeapon.textContent = currentWeapon.name;
+        }
+    }
+
+    // ==================== MOBİL KONTROL FONKSİYONLARI ====================
+    function initMobileControls() {
+        if (!isMobile) return;
+        
+        document.getElementById('mobile-controls').style.display = 'block';
+        document.getElementById('mobile-hud').style.display = 'block';
+        document.getElementById('fire-area').style.display = 'block';
+        document.getElementById('mobile-menu').style.display = 'block';
+        
+        const joystickBase = document.getElementById('joystick-base');
+        const joystickThumb = document.getElementById('joystick-thumb');
+        const fireBtn = document.getElementById('fire-btn');
+        const jumpBtn = document.getElementById('jump-btn');
+        const reloadBtn = document.getElementById('reload-btn');
+        const cameraBtn = document.getElementById('camera-btn');
+        const weaponBtn = document.getElementById('weapon-btn');
+        const fireArea = document.getElementById('fire-area');
+        const menuBtn = document.getElementById('menu-btn');
+        
+        const rect = joystickBase.getBoundingClientRect();
+        joystickCenterX = rect.left + rect.width / 2;
+        joystickCenterY = rect.top + rect.height / 2;
+        
+        // Joystick dokunmatik kontrolleri
+        joystickBase.addEventListener('touchstart', handleJoystickStart, { passive: false });
+        joystickBase.addEventListener('touchmove', handleJoystickMove, { passive: false });
+        joystickBase.addEventListener('touchend', handleJoystickEnd, { passive: false });
+        
+        // Ateş alanı kontrolleri
+        fireArea.addEventListener('touchstart', handleFireStart, { passive: false });
+        fireArea.addEventListener('touchmove', handleLookMove, { passive: false });
+        fireArea.addEventListener('touchend', handleFireEnd, { passive: false });
+        
+        // Buton kontrolleri
+        fireBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (currentWeaponType === "KNIFE") {
+                knifeAttack();
+            } else if (currentWeapon.isAutomatic) {
+                isFiring = true;
+                optimizedShoot();
+                fireInterval = setInterval(() => {
+                    if (isFiring && currentWeapon.canShoot()) {
+                        optimizedShoot();
+                    }
+                }, 1000 / currentWeapon.fireRate);
+            } else {
+                optimizedShoot();
+            }
+        });
+        
+        fireBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            isFiring = false;
+            if (fireInterval) clearInterval(fireInterval);
+        });
+        
+        jumpBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            // Zıplama fonksiyonu
+        });
+        
+        reloadBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (currentWeapon && !currentWeapon.isReloading && 
+                currentWeapon.bulletsInMag < currentWeapon.magSize && currentWeapon.totalBullets > 0) {
+                currentWeapon.startReload();
+            }
+        });
+        
+        cameraBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            toggleCameraMode();
+        });
+        
+        weaponBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            switchWeapon();
+        });
+        
+        menuBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            showMobileMenu();
+        });
+        
+        // Mobil HUD güncelle
+        updateMobileHUD();
+    }
+    
+    function handleJoystickStart(e) {
+        e.preventDefault();
+        joystickActive = true;
+        touchId = e.changedTouches[0].identifier;
+        updateJoystick(e.changedTouches[0]);
+    }
+    
+    function handleJoystickMove(e) {
+        e.preventDefault();
+        if (!joystickActive) return;
+        
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === touchId) {
+                updateJoystick(e.changedTouches[i]);
+                break;
+            }
+        }
+    }
+    
+    function handleJoystickEnd(e) {
+        e.preventDefault();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === touchId) {
+                joystickActive = false;
+                touchId = null;
+                resetJoystick();
+                break;
+            }
+        }
+    }
+    
+    function updateJoystick(touch) {
+        const thumb = document.getElementById('joystick-thumb');
+        const rect = document.getElementById('joystick-base').getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        const deltaX = touch.clientX - centerX;
+        const deltaY = touch.clientY - centerY;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        const maxDistance = rect.width / 2;
+        
+        if (distance > maxDistance) {
+            joystickX = (deltaX / distance) * maxDistance;
+            joystickY = (deltaY / distance) * maxDistance;
+        } else {
+            joystickX = deltaX;
+            joystickY = deltaY;
+        }
+        
+        thumb.style.transform = `translate(${joystickX}px, ${joystickY}px)`;
+        
+        // Hareket kontrolleri
+        const threshold = maxDistance * 0.3;
+        mobileMoveForward = joystickY < -threshold;
+        mobileMoveBackward = joystickY > threshold;
+        mobileMoveLeft = joystickX < -threshold;
+        mobileMoveRight = joystickX > threshold;
+        
+        // PC kontrollerine aktar
+        moveForward = mobileMoveForward;
+        moveBackward = mobileMoveBackward;
+        moveLeft = mobileMoveLeft;
+        moveRight = mobileMoveRight;
+    }
+    
+    function resetJoystick() {
+        const thumb = document.getElementById('joystick-thumb');
+        thumb.style.transform = 'translate(-50%, -50%)';
+        
+        mobileMoveForward = mobileMoveBackward = mobileMoveLeft = mobileMoveRight = false;
+        moveForward = moveBackward = moveLeft = moveRight = false;
+    }
+    
+    function handleFireStart(e) {
+        e.preventDefault();
+        mobileLookActive = true;
+        lastTouchX = e.changedTouches[0].clientX;
+        lastTouchY = e.changedTouches[0].clientY;
+    }
+    
+    function handleLookMove(e) {
+        e.preventDefault();
+        if (!mobileLookActive) return;
+        
+        const touch = e.changedTouches[0];
+        const deltaX = touch.clientX - lastTouchX;
+        const deltaY = touch.clientY - lastTouchY;
+        
+        const sensitivity = 0.003;
+        cameraRotationY -= deltaX * sensitivity;
+        cameraRotationX -= deltaY * sensitivity;
+        cameraRotationX = Math.max(-Math.PI/2.2, Math.min(Math.PI/2.2, cameraRotationX));
+        
+        lastTouchX = touch.clientX;
+        lastTouchY = touch.clientY;
+    }
+    
+    function handleFireEnd(e) {
+        e.preventDefault();
+        mobileLookActive = false;
+    }
+    
+    function showMobileMenu() {
+        const menu = document.createElement('div');
+        menu.style.cssText = `
+            position: fixed;
+            top: 70px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid rgba(255, 165, 0, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 3000;
+            min-width: 200px;
+            color: white;
+        `;
+        
+        menu.innerHTML = `
+            <h3 style="margin-top: 0; color: #ff8c00;">MENÜ</h3>
+            <div style="margin-bottom: 10px;">
+                <div style="font-size: 12px; color: #aaa;">KONTROLLER</div>
+                <div style="font-size: 11px; margin: 5px 0;">• Sol joystick: Hareket</div>
+                <div style="font-size: 11px; margin: 5px 0;">• Sağ ekran: Bakış</div>
+                <div style="font-size: 11px; margin: 5px 0;">• Ateş butonu: Ateş et</div>
+                <div style="font-size: 11px; margin: 5px 0;">• Silah butonu: Silah değiştir</div>
+            </div>
+            <button id="mobile-restart" style="background: #ff8c00; color: white; border: none; padding: 10px 20px; border-radius: 5px; width: 100%; margin-top: 10px;">
+                OYUNU YENİDEN BAŞLAT
+            </button>
+        `;
+        
+        document.body.appendChild(menu);
+        
+        document.getElementById('mobile-restart').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            restartGame();
+        });
+        
+        setTimeout(() => {
+            document.addEventListener('touchstart', function closeMenu(e) {
+                if (!menu.contains(e.target) && e.target.id !== 'menu-btn') {
+                    document.body.removeChild(menu);
+                    document.removeEventListener('touchstart', closeMenu);
+                }
+            });
+        }, 100);
+    }
+
+    // ==================== ANA OYUN İNİT ====================
+    async function init() {
+        // Yatay mod kontrolü
+        if (window.innerHeight > window.innerWidth && isMobile) {
+            document.getElementById('mobile-orientation').style.display = 'flex';
+            return;
+        }
+        
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB);
+        scene.fog = new THREE.Fog(0x87CEEB, 500, 15000);
+        
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 30000);
+        camera.position.set(0, 8, 12);
+        
+        renderer = new THREE.WebGLRenderer({ 
+            antialias: true,
+            powerPreference: "high-performance"
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.body.appendChild(renderer.domElement);
+
+        clock = new THREE.Clock();
+        loader = new GLTFLoader();
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(100, 200, 100);
+        scene.add(directionalLight);
+
+        const weaponCanvas = document.getElementById('weapon-canvas');
+        weaponRenderer = new THREE.WebGLRenderer({ 
+            antialias: false,
+            alpha: true,
+            canvas: weaponCanvas
+        });
+        weaponRenderer.setSize(800, 600);
+        weaponRenderer.setClearColor(0x000000, 0);
+        weaponRenderer.setPixelRatio(1);
+        
+        weaponScene = new THREE.Scene();
+        weaponCamera = new THREE.PerspectiveCamera(45, 800/600, 0.1, 1000);
+        
+        weaponCamera.position.set(0, 0, 8);
+        weaponCamera.lookAt(0, 0, 0);
+
+        const weaponAmbientLight = new THREE.AmbientLight(0xffffff, 1.0);
+        weaponScene.add(weaponAmbientLight);
+
+        bulletPool = new OptimizedBulletPool(100);
+
+        createCleanGround();
+        await loadAssets();
+        
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('game-state').innerText = "LOBBY";
+        document.getElementById('start-btn').style.display = "block";
+        
+        createHUD();
+        initHealthSystem();
+        updatePlayerCount();
+        updateKillCount();
+        
+        if (isMobile) {
+            initMobileControls();
+            document.getElementById('camera-toggle').style.display = 'none';
+            document.getElementById('performance-info').style.display = 'none';
+        }
+        
+        animate();
+    }
+
+    function createCleanGround() {
+        const groundGeometry = new THREE.CircleGeometry(2000, 32);
+        const groundMaterial = new THREE.MeshLambertMaterial({ 
+            color: 0x3a7c3a,
+            side: THREE.DoubleSide
+        });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.1;
+        scene.add(ground);
+
+        const crateGeometry = new THREE.BoxGeometry(3, 3, 3);
+        const crateMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+        
+        for (let i = 0; i < 8; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 100 + Math.random() * 300;
+            const crate = new THREE.Mesh(crateGeometry, crateMaterial);
+            crate.position.set(
+                Math.cos(angle) * distance,
+                1.5,
+                Math.sin(angle) * distance
+            );
+            crate.name = 'crate';
+            scene.add(crate);
+        }
+    }
+
+    async function loadAssets() {
+        loader.load('./models/map.glb', (gltf) => {
+            map = gltf.scene;
+            map.scale.set(10, 10, 10);
+            map.name = 'map';
+            scene.add(map);
+        });
+
+        loader.load('./models/karakter.glb', (gltf) => {
+            player = gltf.scene;
+            player.scale.set(6.5, 7.5, 6.5);
+            player.position.set(0, 0, 0);
+            
+            loader.load('./models/ak47.glb', (gltfGun) => {
+                gun = gltfGun.scene;
+                gun.scale.set(0.4, 0.4, 0.4);
+                gun.position.set(-1.7, 0.2, -0.7);
+                gun.rotation.set(Math.PI / 4, 0, Math.PI / 8);
+                player.add(gun);
+            });
+
+            scene.add(player);
+        }, undefined, () => {
+            createDefaultPlayer();
+        });
+
+        // AK-47 MODELİ
+        loader.load('./models/ak47animasyonlu.glb', (gltf) => {
+            firstPersonAK47 = gltf.scene;
+            firstPersonAK47.scale.set(3.5, 3.5, 3.5);
+            firstPersonAK47.position.set(0.9, -2.0, 4.4);
+            firstPersonAK47.rotation.set(0.05, Math.PI, 0.0);
+            
+            firstPersonWeapon = firstPersonAK47;
+            weaponScene.add(firstPersonWeapon);
+        }, undefined, (error) => {
+            createDefaultFirstPersonWeapon();
+            firstPersonAK47 = firstPersonWeapon;
+        });
+
+        // PİSTOL MODELİ
+        loader.load('./models/animasyonlupistol.glb', (gltf) => {
+            firstPersonPistol = gltf.scene;
+            firstPersonPistol.scale.set(3.5, 3.5, 3.5);
+            firstPersonPistol.position.set(0.9, -1.9, 4.3);
+            firstPersonPistol.rotation.set(0.05, Math.PI, 0.0);
+        });
+
+        // BIÇAK MODELİ
+        loader.load('./models/bicak.glb', (gltf) => {
+            firstPersonKnife = gltf.scene;
+            firstPersonKnife.scale.set(0.1, 0.1, 0.1);
+            firstPersonKnife.position.set(1.0, -1.5, 3.0);
+            firstPersonKnife.rotation.set(0.1, Math.PI, -0.3);
+        });
+
+        // SNİPER MODELİ
+        loader.load('./models/sniper.glb', (gltf) => {
+            firstPersonSniper = gltf.scene;
+            firstPersonSniper.scale.set(2.5, 2.5, 2.5);
+            firstPersonSniper.position.set(0.5, -1.8, 4.0);
+            firstPersonSniper.rotation.set(0.1, 0, 0.0);
+        });
+
+        // MARK23 MODELİ
+        loader.load('./models/animasyonlupistol.glb', (gltf) => {
+            firstPersonMark23 = gltf.scene.clone();
+            firstPersonMark23.scale.set(3.0, 3.0, 3.0);
+            firstPersonMark23.position.set(0.8, -1.9, 4.2);
+            firstPersonMark23.rotation.set(0.05, Math.PI, 0.0);
+        });
+
+        // POMPALI MODELİ
+        loader.load('./models/pompali.glb', (gltf) => {
+            firstPersonShotgun = gltf.scene;
+            firstPersonShotgun.scale.set(0.1, 0.1, 0.1);
+            firstPersonShotgun.position.set(1.0, -2.3, 5.0);
+            firstPersonShotgun.rotation.set(0.08, Math.PI, 0.0);
+        });
+
+        // ARABALAR
+        for (let i = 0; i < 3; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 200 + Math.random() * 500;
+            loader.load('./models/uaz.glb', (gltf) => {
+                const c = gltf.scene;
+                c.scale.set(16, 16, 16);
+                c.position.set(
+                    Math.cos(angle) * distance,
+                    5,
+                    Math.sin(angle) * distance
+                );
+                c.rotation.y = Math.PI;
+                c.name = 'car';
+                scene.add(c);
+                cars.push(c);
+            });
+        }
+
+        loader.load('./models/ucak.glb', (gltf) => {
+            plane = gltf.scene;
+            plane.position.set(0, 1200, 5000);
+            scene.add(plane);
+        });
+    }
+
+    function createDefaultPlayer() {
+        const bodyGeometry = new THREE.BoxGeometry(1, 2, 0.5);
+        const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x4169E1 });
+        player = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        player.position.y = 1;
+        scene.add(player);
+    }
+
+    function createDefaultFirstPersonWeapon() {
+        const weaponGroup = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.3, 0.5), new THREE.MeshLambertMaterial({ color: 0x222222 }));
+        weaponGroup.add(body);
+        weaponGroup.scale.set(1.2, 1.2, 1.2);
+        weaponGroup.position.set(0.5, -1.0, 2.0);
+        weaponGroup.rotation.set(0.05, Math.PI, 0.0);
+        weaponScene.add(weaponGroup);
+        firstPersonWeapon = weaponGroup;
+        return weaponGroup;
+    }
+
+    // ==================== SİLAH DEĞİŞTİRME ====================
+    function switchWeapon() {
+        if (gameState !== "PLAYING" || cameraMode !== "FIRST_PERSON") return;
+        
+        if (firstPersonWeapon) weaponScene.remove(firstPersonWeapon);
+        
+        weaponIndex = (weaponIndex + 1) % weaponList.length;
+        currentWeaponType = weaponList[weaponIndex];
+        
+        switch(currentWeaponType) {
+            case "AK47": 
+                if (firstPersonAK47) {
+                    firstPersonWeapon = firstPersonAK47;
+                } else {
+                    return;
+                }
+                break;
+            case "PISTOL": 
+                if (firstPersonPistol) {
+                    firstPersonWeapon = firstPersonPistol;
+                }
+                break;
+            case "KNIFE": 
+                if (firstPersonKnife) {
+                    firstPersonWeapon = firstPersonKnife;
+                }
+                break;
+            case "SNIPER": 
+                if (firstPersonSniper) {
+                    firstPersonWeapon = firstPersonSniper;
+                }
+                break;
+            case "MARK23": 
+                if (firstPersonMark23) {
+                    firstPersonWeapon = firstPersonMark23;
+                } else if (firstPersonPistol) {
+                    firstPersonWeapon = firstPersonPistol;
+                }
+                break;
+            case "SHOTGUN": 
+                if (firstPersonShotgun) {
+                    firstPersonWeapon = firstPersonShotgun;
+                }
+                break;
+        }
+        
+        if (firstPersonWeapon) {
+            weaponScene.add(firstPersonWeapon);
+            
+            const weaponPositions = {
+                "AK47": { pos: [0.9, -2.0, 4.4], rot: [0.05, Math.PI, 0.0], scale: 3.5 },
+                "PISTOL": { pos: [0.9, -1.9, 4.3], rot: [0.05, Math.PI, 0.0], scale: 3.5 },
+                "KNIFE": { pos: [1.0, -1.5, 3.0], rot: [0.1, Math.PI, -0.3], scale: 0.1 },
+                "SNIPER": { pos: [0.5, -1.8, 4.0], rot: [0.1, 0, 0.0], scale: 2.5 },
+                "MARK23": { pos: [0.8, -1.9, 4.2], rot: [0.05, Math.PI, 0.0], scale: 3.0 },
+                "SHOTGUN": { pos: [1.0, -2.3, 5.0], rot: [0.08, Math.PI, 0.0], scale: 0.1 }
+            };
+            
+            const pos = weaponPositions[currentWeaponType] || weaponPositions["AK47"];
+            firstPersonWeapon.position.set(...pos.pos);
+            firstPersonWeapon.rotation.set(...pos.rot);
+            firstPersonWeapon.scale.set(pos.scale, pos.scale, pos.scale);
+        }
+        
+        currentWeapon = weaponDefinitions[currentWeaponType];
+        updateHUD();
+        updateMobileHUD();
+        
+        if (!isMobile) {
+            const hudIcon = document.querySelector('#weapon-hud div:first-child');
+            if (hudIcon) hudIcon.textContent = currentWeapon.hudIcon;
+            
+            const hudName = document.querySelector('#weapon-hud div:nth-child(3)');
+            if (hudName) hudName.textContent = currentWeapon.name;
+        }
+    }
+
+    function toggleCameraMode() {
+        if (gameState !== "PLAYING") return;
+        
+        if (cameraMode === "THIRD_PERSON") {
+            cameraMode = "FIRST_PERSON";
+            if (!isMobile) document.getElementById('camera-toggle').innerText = "Kamera: 1. Şahıs [V]";
+            if (player) player.visible = false;
+            document.getElementById('weapon-container').style.display = 'block';
+            document.getElementById('crosshair').style.display = 'block';
+            
+            camera.fov = 75;
+            camera.updateProjectionMatrix();
+            
+            if (player) {
+                camera.position.set(
+                    player.position.x,
+                    player.position.y + 1.6,
+                    player.position.z
+                );
+            }
+        } else {
+            cameraMode = "THIRD_PERSON";
+            if (!isMobile) document.getElementById('camera-toggle').innerText = "Kamera: 3. Şahıs [V]";
+            if (player) player.visible = true;
+            document.getElementById('weapon-container').style.display = 'none';
+            document.getElementById('crosshair').style.display = 'none';
+            
+            camera.fov = 75;
+            camera.updateProjectionMatrix();
+        }
+    }
+
+    function knifeAttack() {
+        if (currentWeaponType !== "KNIFE" || isKnifeAttacking) return;
+        
+        isKnifeAttacking = true;
+        knifeAttackTime = 0;
+        
+        const originalPos = firstPersonWeapon.position.clone();
+        const originalRot = firstPersonWeapon.rotation.clone();
+        
+        const attackAnimation = () => {
+            if (knifeAttackTime < 0.2) {
+                firstPersonWeapon.position.z -= 0.2;
+                firstPersonWeapon.rotation.x += 0.3;
+            } else if (knifeAttackTime < 0.4) {
+                firstPersonWeapon.position.z += 0.1;
+                firstPersonWeapon.rotation.x -= 0.15;
+            } else {
+                firstPersonWeapon.position.copy(originalPos);
+                firstPersonWeapon.rotation.copy(originalRot);
+                isKnifeAttacking = false;
+                return;
+            }
+            
+            knifeAttackTime += 0.016;
+            requestAnimationFrame(attackAnimation);
+        };
+        
+        requestAnimationFrame(attackAnimation);
+    }
+
+    // ==================== KONTROLLER ====================
+    let isFiring = false;
+    let fireInterval;
+
+    // PC Kontrolleri
+    if (!isMobile) {
+        document.addEventListener('mousedown', (e) => {
+            if (gameState === "LOBBY" && e.button === 0) {
+                isMouseDown = true;
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            }
+            
+            if (e.button === 0 && isMouseLocked && gameState === "PLAYING") {
+                if (currentWeaponType === "KNIFE") {
+                    knifeAttack();
+                } else if (currentWeapon.isAutomatic) {
+                    isFiring = true;
+                    optimizedShoot();
+                    fireInterval = setInterval(() => {
+                        if (isFiring && currentWeapon.canShoot()) {
+                            optimizedShoot();
+                        }
+                    }, 1000 / currentWeapon.fireRate);
+                } else {
+                    optimizedShoot();
+                }
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (gameState === "LOBBY" && e.button === 0) isMouseDown = false;
+            
+            if (e.button === 0 && isMouseLocked) {
+                isFiring = false;
+                if (fireInterval) clearInterval(fireInterval);
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (gameState === "LOBBY" && isMouseDown && player) {
+                const deltaX = e.clientX - mouseX;
+                player.rotation.y += deltaX * 0.01;
+                mouseX = e.clientX;
+            }
+            
+            if (isMouseLocked) {
+                const sensitivity = 0.001;
+                cameraRotationY -= e.movementX * sensitivity;
+                cameraRotationX -= e.movementY * sensitivity;
+                cameraRotationX = Math.max(-Math.PI/2.2, Math.min(Math.PI/2.2, cameraRotationX));
+                
+                if (gameState === "PLAYING" && cameraMode === "THIRD_PERSON") {
+                    player.rotation.y = cameraRotationY;
+                }
+            }
+        });
+    }
+
+    // Klavye kontrolleri (hem PC hem mobil)
+    window.addEventListener('keydown', (e) => {
+        if (isMobile) return; // Mobilde klavye kullanma
+        
+        if (e.code === 'KeyV') toggleCameraMode();
+        if (e.code === 'KeyB') switchWeapon();
+        
+        if (e.code === 'KeyR' && gameState === "PLAYING") {
+            if (currentWeapon && !currentWeapon.isReloading && 
+                currentWeapon.bulletsInMag < currentWeapon.magSize && currentWeapon.totalBullets > 0) {
+                currentWeapon.startReload();
+            }
+        }
+        
+        if (e.code === 'KeyZ' && currentWeapon.canZoom) {
+            camera.fov = currentWeapon.zoomFOV;
+            camera.updateProjectionMatrix();
+            document.getElementById('crosshair').style.display = 'none';
+        }
+        
+        if (e.code === 'Space' && gameState === "AIRPLANE") {
+            player.position.copy(plane.position);
+            player.visible = (cameraMode === "THIRD_PERSON");
+            gameState = "DIVING";
+        }
+        
+        if (e.code === 'KeyE') {
+            if (gameState === "PLAYING") {
+                const currentPos = (cameraMode === "FIRST_PERSON") ? 
+                    new THREE.Vector3(camera.position.x, camera.position.y - 1.6, camera.position.z) : 
+                    player.position;
+                
+                cars.forEach(c => {
+                    if (currentPos.distanceTo(c.position) < 30) {
+                        gameState = "DRIVING";
+                        currentCar = c;
+                        player.visible = false;
+                        document.getElementById('weapon-container').style.display = 'none';
+                    }
+                });
+            } else if (gameState === "DRIVING") {
+                gameState = "PLAYING";
+                const exitPos = currentCar.position.clone().add(new THREE.Vector3(25, 0, 0));
+                if (cameraMode === "THIRD_PERSON") {
+                    player.visible = true;
+                    player.position.copy(exitPos);
+                } else {
+                    player.visible = false;
+                    camera.position.copy(exitPos.add(new THREE.Vector3(0, 1.6, 0)));
+                    document.getElementById('weapon-container').style.display = 'block';
+                }
+                currentCar = null;
+            }
+        }
+        
+        if (e.code === 'KeyW') moveForward = true;
+        if (e.code === 'KeyS') moveBackward = true;
+        if (e.code === 'KeyA') moveLeft = true;
+        if (e.code === 'KeyD') moveRight = true;
+        
+        if (gameState === "LOBBY" && player) {
+            const moveSpeed = 2;
+            if (e.code === 'KeyW') player.translateZ(-moveSpeed);
+            if (e.code === 'KeyS') player.translateZ(moveSpeed);
+            if (e.code === 'KeyA') player.translateX(-moveSpeed);
+            if (e.code === 'KeyD') player.translateX(moveSpeed);
+        }
+    });
+
+    window.addEventListener('keyup', (e) => {
+        if (isMobile) return;
+        
+        if (e.code === 'KeyW') moveForward = false;
+        if (e.code === 'KeyS') moveBackward = false;
+        if (e.code === 'KeyA') moveLeft = false;
+        if (e.code === 'KeyD') moveRight = false;
+        
+        if (e.code === 'KeyZ' && currentWeapon.canZoom) {
+            camera.fov = 75;
+            camera.updateProjectionMatrix();
+            if (cameraMode === "FIRST_PERSON") {
+                document.getElementById('crosshair').style.display = 'block';
+            }
+        }
+    });
+
+    // Başlat butonu
+    document.getElementById('start-btn').onclick = () => {
+        gameState = "AIRPLANE";
+        player.visible = false;
+        document.getElementById('weapon-container').style.display = 'none';
+        document.getElementById('start-btn').style.display = "none";
+        
+        if (!isMobile) {
+            document.body.requestPointerLock();
+            isMouseLocked = true;
+            document.getElementById('crosshair').style.display = "block";
+            document.getElementById('camera-toggle').style.display = "block";
+        }
+        
+        document.getElementById('health-container').style.display = 'block';
+    };
+
+    document.getElementById('restart-btn').onclick = restartGame;
+
+    if (!isMobile) {
+        document.addEventListener('pointerlockchange', () => {
+            isMouseLocked = document.pointerLockElement === document.body;
+        });
+    }
+
+    // ==================== ANİMASYON DÖNGÜSÜ ====================
+    function animate() {
+        requestAnimationFrame(animate);
+        const delta = Math.min(clock.getDelta(), 0.033);
+        
+        if (!isMobile) {
+            updatePerformanceInfo();
+        }
+        
+        autoHealOverTime();
+        
+        if (gameState === "LOBBY") {
+            if (player) {
+                camera.position.set(0, 8, 12);
+                camera.lookAt(player.position);
+            } else {
+                camera.position.set(0, 8, 12);
+                camera.lookAt(0, 5, 0);
+            }
+        }
+        else if (gameState === "AIRPLANE" && plane) {
+            plane.translateZ(-150 * delta);
+            const camDist = 50;
+            camera.position.set(
+                plane.position.x + camDist * Math.sin(cameraRotationY), 
+                plane.position.y + 20, 
+                plane.position.z + camDist * Math.cos(cameraRotationY)
+            );
+            camera.lookAt(plane.position);
+        }
+        else if (gameState === "DIVING") {
+            player.position.y -= 130 * delta;
+            player.translateZ(-60 * delta);
+            if (cameraMode === "THIRD_PERSON") {
+                const camDist = 30;
+                camera.position.set(
+                    player.position.x + camDist * Math.sin(cameraRotationY), 
+                    player.position.y + 20, 
+                    player.position.z + camDist * Math.cos(cameraRotationY)
+                );
+                camera.lookAt(player.position.x, player.position.y + 7, player.position.z);
+            } else {
+                camera.position.set(
+                    player.position.x,
+                    player.position.y + 1.6,
+                    player.position.z
+                );
+                camera.rotation.y = cameraRotationY;
+                camera.rotation.x = cameraRotationX;
+            }
+            if (player.position.y <= 2) { 
+                player.position.y = 0; 
+                gameState = "PLAYING";
+                initBattleRoyale();
+            }
+        }
+        else if (gameState === "PLAYING") {
+            bulletPool.update(delta);
+            
+            const playerPosition = cameraMode === "FIRST_PERSON" ? 
+                camera.position.clone().sub(new THREE.Vector3(0, 1.6, 0)) : 
+                player.position.clone();
+            
+            bots.forEach(bot => {
+                bot.update(delta, playerPosition);
+            });
+            
+            const moveSpeed = 50 * delta;
+            if (cameraMode === "THIRD_PERSON") {
+                if (!isMobile) document.getElementById('crosshair').style.display = "none";
+                if (moveForward || mobileMoveForward) player.translateZ(-moveSpeed);
+                if (moveBackward || mobileMoveBackward) player.translateZ(moveSpeed);
+                if (moveLeft || mobileMoveLeft) player.translateX(-moveSpeed);
+                if (moveRight || mobileMoveRight) player.translateX(moveSpeed);
+                
+                const camOffset = new THREE.Vector3(0, 10, 18).applyEuler(new THREE.Euler(0, cameraRotationY, 0));
+                const targetPosition = player.position.clone().add(camOffset);
+                camera.position.lerp(targetPosition, 0.1);
+                camera.lookAt(player.position.x, player.position.y + 7, player.position.z);
+            } else if (cameraMode === "FIRST_PERSON") {
+                if (!isMobile) document.getElementById('crosshair').style.display = "block";
+                const forward = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(0, cameraRotationY, 0));
+                const right = new THREE.Vector3(1, 0, 0).applyEuler(new THREE.Euler(0, cameraRotationY, 0));
+                
+                if (moveForward || mobileMoveForward) camera.position.add(forward.clone().multiplyScalar(moveSpeed));
+                if (moveBackward || mobileMoveBackward) camera.position.add(forward.clone().multiplyScalar(-moveSpeed));
+                if (moveLeft || mobileMoveLeft) camera.position.add(right.clone().multiplyScalar(-moveSpeed));
+                if (moveRight || mobileMoveRight) camera.position.add(right.clone().multiplyScalar(moveSpeed));
+                
+                player.position.set(camera.position.x, 0, camera.position.z);
+                player.rotation.y = cameraRotationY;
+                camera.rotation.y = cameraRotationY;
+                camera.rotation.x = cameraRotationX;
+                
+                if (firstPersonWeapon && !isKnifeAttacking) {
+                    const time = Date.now() * 0.001;
+                    firstPersonWeapon.position.y += Math.sin(time * 1.5) * 0.002;
+                    if (moveForward || moveBackward || moveLeft || moveRight || 
+                        mobileMoveForward || mobileMoveBackward || mobileMoveLeft || mobileMoveRight) {
+                        firstPersonWeapon.position.y += Math.sin(time * 8) * 0.005;
+                        firstPersonWeapon.position.x += Math.sin(time * 6) * 0.003;
+                        firstPersonWeapon.rotation.z = Math.sin(time * 8) * 0.01;
+                    }
+                    weaponRenderer.render(weaponScene, weaponCamera);
+                }
+            }
+        }
+        else if (gameState === "DRIVING" && currentCar) {
+            const carSpeed = 120 * delta;
+            if (moveForward || mobileMoveForward) currentCar.translateZ(carSpeed);
+            if (moveBackward || mobileMoveBackward) currentCar.translateZ(-carSpeed);
+            const carCamOffset = new THREE.Vector3(0, 20, 50).applyQuaternion(currentCar.quaternion);
+            camera.position.lerp(currentCar.position.clone().add(carCamOffset), 0.1);
+            camera.lookAt(currentCar.position.x, currentCar.position.y + 8, currentCar.position.z);
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    function updatePerformanceInfo() {
+        frameCount++;
+        const currentTime = performance.now();
+        
+        if (currentTime >= lastTime + 1000) {
+            fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
+            frameCount = 0;
+            lastTime = currentTime;
+            
+            const perfInfo = document.getElementById('performance-info');
+            if (perfInfo) {
+                perfInfo.textContent = `FPS: ${fps} | Oyuncu: ${alivePlayers} | Can: ${playerHealth}`;
+                perfInfo.style.color = fps > 30 ? '#00ff00' : fps > 15 ? '#ffff00' : '#ff0000';
+            }
+        }
+    }
+
+    window.addEventListener('resize', () => {
+        // Yatay mod kontrolü
+        if (window.innerHeight > window.innerWidth && isMobile) {
+            document.getElementById('mobile-orientation').style.display = 'flex';
+            document.getElementById('ui').style.display = 'none';
+            document.getElementById('mobile-controls').style.display = 'none';
+            document.getElementById('mobile-hud').style.display = 'none';
+            document.getElementById('fire-area').style.display = 'none';
+        } else {
+            document.getElementById('mobile-orientation').style.display = 'none';
+            if (isMobile && gameState === "PLAYING") {
+                document.getElementById('mobile-controls').style.display = 'block';
+                document.getElementById('mobile-hud').style.display = 'block';
+                document.getElementById('fire-area').style.display = 'block';
+            }
+        }
+        
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            if (window.innerHeight > window.innerWidth && isMobile) {
+                document.getElementById('mobile-orientation').style.display = 'flex';
+            }
+        }, 100);
+    });
+
+    // Oyunu başlat
+    init();
+</script>
+</body>
+</html>
